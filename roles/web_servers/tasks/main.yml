@@ -1,0 +1,44 @@
+- name: install apache and PHP packages for upuntu
+  tags: apache,apache2,ubuntu
+  package:
+    name:
+      - "{{ apache_package_name  }}"
+      - "{{ php_package_name }}"
+  when: ansible_distribution == "Ubuntu"
+
+- name: start Apache2 service
+  service:
+    name: "{{ apache_service  }}"
+    state: started
+    enabled: yes
+
+- name: generate sshd_config file from template
+  tags: ssh
+  template:
+    src: "{{ ssh_template_file }}"
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644 
+  notify: restart_sshd
+
+
+- name: change e-mail address for admin
+  tags: apache,centos,httpd
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^ServerAdmin'
+    line: ServerAdmin ahmed@server.com
+  when: ansible_distribution == "CentOS"
+  notify: restart_apache
+
+
+- name: copy default html file for site
+  tags: apache,apache2,httpd
+  copy:
+    src: default_site.html
+    dest: /var/www/html/index.html
+    owner: ahmed
+    group: ahmed
+    mode: 0644
+

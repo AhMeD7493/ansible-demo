@@ -1,0 +1,111 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (CentOS)
+    tags: always
+    yum:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Upuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Upuntu" 
+
+- hosts: workstation
+  become: true
+  tasks:
+    
+  - name: install unzip
+    apt:
+      name: unzip
+
+  - name: install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: ahmed
+      group: ahmed
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and PHP packages for upuntu
+    tags: apache,apache2,ubuntu 
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+    when: ansible_distribution == "Ubuntu"
+
+  - name: start Apache2 service
+    service:
+      name: apache2
+      state: started
+    when: ansible_distribution == "Ubuntu"
+  
+
+  - name: install Apache2 and PHP packages for CentOS
+    tags: apache,centos,httpd
+    yum:
+      name:
+        - httpd
+        - php
+    when: ansible_distribution == "CentOS"
+
+  - name: start httpd service
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: change e-mail address for admin
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin ahmed@server.net
+    when: ansible_distribution == "CentOS"
+    register: httpd
+
+  - name: restart httpd
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed 
+
+  - name: copy default html file for site
+    tags: apache,apache2,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: ahmed
+      group: ahmed
+      mode: 0644
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install mariadb package
+    tags: upuntu,mariadb,db
+    apt:
+      name: mariadb
+      state: latest
+    when: ansible_distribution == "ubuntu"
+
+  - name: start mariadb service
+    service:
+      name: mariadb
+      state: started
+    when: ansible_distribution == "ubuntu"

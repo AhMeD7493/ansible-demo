@@ -1,0 +1,27 @@
+- name: install mariadb service (ubuntu)
+  tags: upuntu,mariadb,db
+  apt:
+    name: mariadb-server
+    state: latest
+  when: ansible_distribution == "ubuntu"
+
+- name: start mariadb service
+  service:
+    name: mariadb-server
+    state: started
+    enabled: yes
+  when: ansible_distribution == "ubuntu"
+
+- name:  install mariadb service (CentOS)
+  tags: centos,mariadb.db
+  yum:
+    name: mariadb
+    state: latest
+  when: ansible_distribution == "CentOS"
+
+- name: start mariadb service (CentOS)
+  service:
+    name: mariadb 
+    state: started
+    enabled: yes
+  when: ansible_distribution == "CentOS"

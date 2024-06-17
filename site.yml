@@ -1,0 +1,37 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (CentOS)
+    tags: always
+    yum:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Upuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Upuntu" 
+
+- hosts: workstation
+  become: true
+  roles: 
+    - workstations
+
+
+
+- hosts: web_servers
+  become: true
+  roles: 
+    - web_servers
+  
+
+
+- hosts: db_servers
+  become: true
+  roles:
+    - db_servers

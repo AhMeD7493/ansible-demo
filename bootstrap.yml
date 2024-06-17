@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+  - name: install updates (CentOS)
+    tags: always
+    yum:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Upuntu)
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+
+  - name: create group dev
+    tags: always
+    group:
+      name: dev
+
+  - name: create simone user
+    tags: always
+    user:
+      name: ali
+      groups: dev 
