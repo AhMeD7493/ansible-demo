@@ -1,0 +1,19 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: update yum repository
+    yum:
+      update_cache: yes
+
+  - name: remove httpd package
+    yum:
+      name: httpd
+      state: absent
+
+  - name: remove php 
+    yum:
+      name: php
+      state: remove
